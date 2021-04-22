@@ -53,6 +53,14 @@ class Queue {
         return this.queueItemList.shift();
     }
 
+    get list(){
+        return this.queueItemList;
+    }
+
+    merge(queueObj){
+        this.queueItemList = [...this.queueItemList, queueObj.list]
+    }
+
     get length(){
         return this.queueItemList.length;
     }
@@ -64,16 +72,15 @@ class Queue {
 }
 
 class QueueHandler{
-    static #currentQueue;
+    static #currentQueue = new Queue();
     static #newQueue = new Queue();
     static #interval;
     static #queueRunning = false;
     static #debug = false;
 
     static async #run(){
-        if(QueueHandler.#newQueue.isEmpty()){
+        if(QueueHandler.#newQueue.isEmpty())
             return true;
-        }
 
         QueueHandler.#initRun();
         let result = [];
@@ -91,11 +98,14 @@ class QueueHandler{
                         }catch(errmsg){
                             return reject(errmsg)
                         }
+                    }else{
+                        QueueHandler.add(this.currentQueueItem);
                     }
                     return resolve(false);
                 }.bind({"currentQueueItem":QueueHandler.#currentQueue.dequeue()}))
             );
         }
+
         Promise.all(result)
             .then((value)=>{
                 if(QueueHandler.#debug)
@@ -112,7 +122,10 @@ class QueueHandler{
     }
 
     static #initRun(){
-        QueueHandler.#currentQueue = QueueHandler.#newQueue;
+        if(!!QueueHandler.#currentQueue.isEmpty())
+            QueueHandler.#currentQueue = QueueHandler.#newQueue;
+        else
+            QueueHandler.#currentQueue.merge(QueueHandler.#newQueue);
         QueueHandler.#newQueue = new Queue();
     }
 
