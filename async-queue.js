@@ -99,7 +99,7 @@ class QueueHandler{
                             return reject(errmsg)
                         }
                     }else{
-                        QueueHandler.add(this.currentQueueItem);
+                        QueueHandler.add(this.currentQueueItem); 
                     }
                     return resolve(false);
                 }.bind({"currentQueueItem":QueueHandler.#currentQueue.dequeue()}))
